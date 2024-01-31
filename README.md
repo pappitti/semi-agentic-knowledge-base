@@ -9,11 +9,14 @@ This project is written in django with a small amount of vanilla javascript. It 
 Important warning : this is a demo app meant to experiment with information extraction automation. It is fit to run on device but giving access to third-parties would require material changes around authentication and, more generally, security features, even on a local network. 
 
 ## Installation
-1. `python3 -m venv venv`
-2. `source venv/bin/activate`
-3. `pip install -r requirements.txt`
-4. `cp .env.example .env`
-5. `python manage.py migrate`
+1. `git clone https://github.com/pappitti/semi-agentic-knowledge-base.git`
+2. `cd semi-agentic-knowledge-base`
+3. `python3 -m venv myenv`
+4. `source venv/bin/activate` 
+Note : if you follow these steps, the python interpreter for this project should be in ./semi-agentic-knowledge-base/myenv/bin/python
+5. `pip install django python-decouple Pillow beautifulsoup4 requests openai pymupdf`
+6. `cp .env.example .env`
+7. `python manage.py migrate`
 
 The last phase will create a brand new local database and seed some tables with information that is necessary for the app to work (e.g OpenAI models names or chat formats for local models)
 
