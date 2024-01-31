@@ -1,0 +1,71 @@
+{% extends "homepage/index.html" %}
+{% block content %}
+<div class="container">
+    <label class="margin-top-30">Paste list of urls below and let the LLM do the heavy-lifting for you. Alternatively, you can create a new entry manually <a class="external-link" href="{% url 'newdocs:manual'%}">here</a>.</label>
+    <form id="url_list" action="{% url 'newdocs:add_new_docs' %}" method="post">
+        {% csrf_token %}
+        <textarea class="form-input" id="url" name="url" placeholder="https://arxiv.org/abs/2305.07759, https://www.science.org/content/article/unlucky-numbers-fighting-murder-convictions-rest-shoddy-stats, https://www.wired.co.uk/article/china-space-race, https://securelist.com/operation-triangulation-the-last-hardware-mystery/111669/...">{% if urls %}{% for item in urls %}{{ item.url }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</textarea>
+        <div class="right-aligned">
+            <input type="submit" value="Add">
+        </div>
+    </form>
+    <div class="margin-top-30">
+        {% if not completed %}
+            {% block pre_processed %}
+            {% endblock %}
+        {% endif %}
+    </div>
+    <div class="container margin-top-50 margin-bottom-30 {% if completed %}process-complete{% endif %}" id="processed">
+        {% if completed %}
+            <div class="margin-bottom-30">Summary : pipeline of {{total}} item(s) completed in {{minutes}} minute(s) and {{seconds}} second(s)</div>
+            <div class="doc-info">{{logged}} were logged under task ID ({{task_id}}). {{failed}} failed.</div>
+            {% if llm %}
+                <div class="doc-info">{{processed_by_llm}} item(s) have been processed by a LLM ({{llm}}). In {{two_shot_success}} case(s) the model required two shots to return a correct json file and in {{failed_json}} case(s) the model could not generate a correct json even after two shots.</div>
+            {% endif %}
+            <div class="tile-item-info margin-top-15">Check the processing log in your admin page for more details</div>
+        {%else%}
+            {% if urls %}
+            <form id="url_selection" >
+                {% if duplicates %}
+                    <div class="table-row table-header"> 
+                        <div class="url-column">Already in database</div>
+                        <div class="doc-info small-column">Last</div>
+                        <div class="doc-info small-column">Model</div>
+                        <div class="doc-info small-column">Success</div>
+                        <div class="doc-info small-column">See</div>
+                        <div class="doc-info small-column">Overwrite</div>
+                    </div>
+                    {% for item in duplicates %}
+                        <div class="table-row "> 
+                            <div class="doc-info url-column"><a class="external-link" href="{{ item.url }}" target="_blank" rel="noreferrer noopener nofollow">{{ item.url }}</a></div>
+                            <div class="doc-info small-column">{{item.last_processing|date:'Y m d'}}</div>
+                            <div class="doc-info small-column">{{item.model}}</div>
+                            <div class="doc-info small-column">{% if item.was_success %}✅{% else %}❌{% endif %}</div>
+                            <div class="doc-info small-column external-link"><a href="{% url 'articles:document_details' item.slug %}" target="_blank" rel="noreferrer noopener nofollow">see</a></div>
+                            <div class="small-column">
+                                <input type="checkbox" id="{{ item.url }}" name="{{ item.url }}" value="{{ item.url }}">
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %} 
+                {% if new_entries %}
+                    <div class="table-row table-header margin-top-15"> 
+                        <div class="url-column">To be added</div>
+                        <div class="doc-info small-column">Write</div>
+                    </div>
+                    {% for item in new_entries %}
+                        <div class="table-row"> 
+                            <div class="doc-info url-column"><a class="external-link" href="{{ item.url }}" target="_blank" rel="noreferrer noopener nofollow">{{ item.url }}</a></div>
+                            <div class="small-column">
+                                <input type="checkbox"" type="checkbox" id="{{ item.url }}" name="{{ item.url }}" value="{{ item.url }}" checked>
+                            </div>
+                        </div>
+                    {% endfor %}    
+                {% endif %}
+            </form>
+            {% endif %} 
+        {% endif %}
+    </div> 
+</div>
+
+{% endblock %}

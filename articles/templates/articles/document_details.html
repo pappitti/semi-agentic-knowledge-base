@@ -1,0 +1,61 @@
+{% extends "homepage/index.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+    {% if document%}
+    <div class="content-container">
+        <div class="content-columns margin-top-50 margin-bottom-30 wrap-reverse">
+            <div class="column-2-3">
+                <div class="doc-title" name="document_title">{{ document.title }}</div>
+                <div class="margin-top-15 doc-info" name="publication_date">Date: {{ document.publication_date }}</div>         
+                <div class="margin-top-15  doc-info"  name="authors"> Authors: {% for item in authors %}<a class="external-link" href="/?author={{ item }}" target="_blank" rel="noreferrer noopener nofollow">{{ item }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+                <div class="margin-top-15 doc-info" name="categories">Categories: {% for item in categories %}<a class="external-link" href="/?category={{ item }}" target="_blank" rel="noreferrer noopener nofollow">{{ item }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>         
+                <div class="margin-top-15  doc-info"  name="countries"> Countries: {% for item in countries %}<a class="external-link" href="/?country={{ item }}" target="_blank" rel="noreferrer noopener nofollow">{{ item }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+            </div>
+            <div class="column-1-3">
+                <img class="thumbnail" src="{{ MEDIA_URL }}{% if document.default_image %}{{document.default_image}}{% else %}images/DALLE-2024-logo-design.png{% endif %}" alt="thumbnail"> 
+            </div>
+        </div>
+        <div class="summary_type">
+            {% if document.summary_type %}
+            {{ document.summary_type }}
+            {% else %}
+            Summary
+            {% endif %}
+        </div>
+        <div class="doc-info" name="summary">{{ document.summary}}</div>
+        <div class="inline margin-top-15 margin-bottom-15">
+            <div name="url">Read</div>
+            <a class="external-link" href="{{document.source_url}}" target="_blank" rel="noreferrer noopener nofollow">here</a>
+        </div>
+        <hr /> 
+        <div class="margin-top-15" for="my_notes">Notes</div>
+        <div class="doc-info margin-bottom-15" name="my_notes">
+            {% if document.comment %}
+            {{ document.comment }}
+            {% else %}
+            None
+            {% endif %}
+        </div>
+        <hr /> 
+        <div class="content-columns">
+            <div class="column-1-2">
+                <div class="margin-top-15 doc-info">Model info: {% if document.llm %}drafted by {{document.llm}}{% else %}no llm used{% endif %}</div>
+                <div class="doc-info margin-top-15 margin-bottom-15" name="slug">Slug: {{ document.slug }}</div>
+            </div>
+            <div class="column-1-2 button-container">
+                <a class="button-link {% if not document.is_draft %}header-button bordered{% endif %}" href="{% url 'articles:edit_document_details' document.slug %}">
+                    {% if document.is_draft %}
+                        Draft version, validate here
+                    {% else %}
+                        Edit
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <h1>Document not found</h1>
+    {% endif %}
+</div>
+{% endblock %}

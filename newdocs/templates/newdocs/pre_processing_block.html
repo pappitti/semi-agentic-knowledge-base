@@ -1,0 +1,183 @@
+{% extends "newdocs/add_new_docs.html" %}
+{% block pre_processed %}
+<div class="scraping-info">
+    <div class="margin-bottom-15">Responsible and Safe Web Scraping Practices</div>
+    <div class="doc-info">Always verify the safety of URLs. Review and comply with the target website's terms of service. And avoid collecting personal or sensitive information without consent.</div>
+</div>
+<div class="content-columns margin-top-30 pre-processed" id="pre-processed">
+    <div class="column-1-4 processing-summary bordered">
+        <ul>
+            <li>Processing Summary</li>
+            <li class="doc-info">{{ counts.youtube }} Youtube videos will not be processed by the LLM</li>
+            <li class="doc-info">{{ counts.arxiv }} Arxiv documents will be partially processed by the LLM</li>
+            <li class="doc-info">{{ counts.others }} other documents will be fully processed by the LLM</li>
+        </ul>
+    </div>
+    <div class="column-3-4">
+        <form class="content-container" id="client_choice" action="{% url 'newdocs:launch_processing' %}" method="post">
+            {% csrf_token %}
+            <div class="margin-top-15 margin-bottom-15">How do you want to access the model?</div>
+            <div class="content-columns">
+                <div class="column-1-2 row">
+                    <input type="radio" id="openai" name="client" value="openai" checked><label for="openai"> OpenAI API</label>
+                    <select id="model_name" name="model_name">
+                        {% for model in models %}
+                            <option value="{{ model.model_name }}" {% if model.default %}selected{% endif %}>{{ model.model_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="column-1-2 row">
+                    <input type="radio" id="llama_cpp_server" name="client" value="llama_cpp_server"><label for="llama_cpp_server"> Llama.cpp server</label>
+                    <select id="chat" name="chat">
+                        {% for chat in chat_formats %}
+                            <option value="{{ chat.chat_name }}" {% if chat.default %}selected{% endif %}>{{ chat.chat_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>	
+            <div class="doc-info margin-top-15" id="info-message">
+            Make sure you have valid credentials in your .env file and enough credits on your API billing plan.  
+            </div>
+            <div class="list-check margin-top-15">
+                <div >Take a moment to review your list of URLs before processing them</div>
+                <input type="submit" value="Launch">
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var openaiRadio = document.getElementById('openai');
+        var llamaCppServerRadio = document.getElementById('llama_cpp_server');
+        var infoMessage = document.getElementById('info-message');
+        var processedBlock = document.getElementById('processed');
+        var form = document.getElementById('client_choice');
+        var otherForm = document.getElementById('url_selection');
+
+        if (openaiRadio) {
+            openaiRadio.addEventListener('change', function() {
+                if(this.checked) {
+                    infoMessage.textContent = 'Make sure you have valid credentials in your .env file and enough credits on your API billing plan.';
+                }
+            });
+        }
+
+        if (llamaCppServerRadio) {
+            llamaCppServerRadio.addEventListener('change', function() {
+                if(this.checked) {
+                    infoMessage.innerHTML = 'Make sure you have the Llama.cpp server running (not llama_cpp-python server, instead llama.cpp ./server) on a different port than this Django app. A model capable of processing 16k tokens is recommended. Server address must be set in you .env file. see README for instructions.';
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('client_choice form submitted');
+
+                const submitButton = form.querySelector('input[type="submit"]');
+                submitButton.disabled = true;
+
+                var data = new FormData(e.target);
+
+                // create a unique task_id to track the progress of the processing
+                let taskId = new Date().getTime();
+                data.append('task_id', taskId);
+
+                if (otherForm) {
+                    var otherData = new FormData(otherForm);
+                    for (const [key, value] of otherData.entries()) {
+                        const element = otherForm.elements[key];
+                        if (element && element.type === 'checkbox' && element.checked) {
+                            data.append('selected_urls', value);;
+                            }
+                    }
+                }
+
+                fetch("{% url 'newdocs:launch_processing' %}", {
+                    method: 'POST',
+                    body: data ,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(res_json => {
+                    console.log("Response: ", res_json);
+                    // Start polling for progress and update UI accordingly
+                    if (!res_json.error){
+                    pollForProgress(taskId, data);
+                    }
+                });
+                
+                // Function to poll for progress
+                function pollForProgress(taskId, sourceData) {
+                    // TODO: Add error handling and stop polling if error occurs
+                    fetch(`/new/progress-update/${taskId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Progress: ", data);
+                
+                        if (data.progress < 100 && data.processing_step!="finished") {
+
+                            processedBlock.innerHTML=`
+                                <div class="processing">    
+                                    <div class="doc-info">Processing... This may take a while. Do not close this page, but feel free to <a class="external-link" href="/" target="_blank" rel="noreferrer noopener nofollow">open a new tab</a> and continue using the app. New documents will be added to your library as they are processed. You can also track the processing log in your admin page.</div>
+                                    ${data.completed?`<div class="margin-top-30"> Completed: ${data.completed}/${data.total} (${Math.round(data.progress)}%) of which ${data.failed_docs["count"]} failed</div>`:""}
+                                    ${data.current_category?`<div class="doc-info"> Current category: ${data.current_category}</div>`:""}
+                                    ${data.current_doc?`<div class="doc-info"> Current doc: <a class="external-link" href="${data.current_doc}" target="_blank" rel="noreferrer noopener nofollow">${data.current_doc}</a></div>`:""}
+                                    ${data.processing_step?`<div class="doc-info"> Processing step: ${data.processing_step}</div>`:""}
+                                </div>
+                            `;
+
+                            // Continue polling if progress is less than 100% (Poll every 1.5 seconds)
+                            setTimeout(() => pollForProgress(taskId, sourceData), 1500);  
+                        } 
+                        else {
+                            console.log("Processing complete!");
+                            // Handle completion (update UI, etc.) 
+                            // No more polling needed
+                            submitButton.disabled = false;
+                            endTimestamp = new Date().getTime();
+                            duration = (endTimestamp - taskId)/1000;
+                            sourceData.append('duration', duration);
+
+                            fetch("{% url 'newdocs:process_summary' %}", {
+                                method: 'POST',
+                                body: sourceData ,
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(res_json => {
+                                if (res_json.redirect_url) {
+                                    // Redirect to /new/process-complete
+                                    window.location.href = "{% url 'newdocs:process_complete' %}";
+                                }
+                                else {
+                                    // Redirect to homepage
+                                    window.location.href = "/";
+                                }
+                            });
+
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error polling for progress:", error);
+                        processedBlock.innerHTML=`  
+                                        <div class="doc-info">Processing... This may take a while. Do not close this page, but feel free to <a class="external-link" href="/" target="_blank" rel="noreferrer noopener nofollow">open a new tab</a> and continue using the app. New documents will be added to your library as they are processed. You can also track the processing log in your admin page.</div>
+                                        <div class="margin-top-30">An error prevents the polling of process updates.</div>
+                                        <div class="doc-info">You should be able to find information about progress in you admin page or in the terminal</div>
+                                        `;
+                    });
+                }
+            });
+        }
+    });
+</script>  
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends "homepage/index.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+    {% if document %}
+        {% if form %}
+            <div class="submission-error margin-top-15 margin-bottom-15">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                    {{ field.errors }}
+            {% endfor %}
+            </div>
+        {% endif %}
+    <form class="content-container margin-bottom-30" action="{% url 'homepage:save_doc' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if origin_slug %}
+            <input type="hidden" name="origin_slug" value="{{ origin_slug }}">
+        {% endif %}
+        <label class="margin-top-5" for="title">Title<sup>*</sup></label>
+        <input  type="text" class="form-input" id="title" name="title" value="{% if document.title   %}{{ document.title   }}{% endif %}" required>
+        <div class="content-columns margin-top-30 margin-bottom-30 wrap-reverse gap-15">
+            <div class="column-2-3">
+                <label for="publication_date">Publication date<sup>*</sup> <input  type="date" id="publication_date" name="publication_date" value="{% if document.publication_date %}{{ document.publication_date|date:'Y-m-d' }}{% endif %}" required></label>      
+                <label class="margin-top-15" for="authors">Authors (amend, delete or add Authors using the blank field)</label>
+                <div class="content-columns">
+                    <div class="column-1-3 button-container">
+                        <div class="tile-item-info">If you need more fields, click below</div>
+                        <div class="button-link" id="add_to_author_set">Add more</div>
+                    </div>
+                    <div class="column-2-3" id="author_set-container"><!-- TODO : add lookup value? -->
+                        {{ author_formset.management_form }}
+                        {% for form in author_formset %}
+                            <div class="formsets">
+                                    {{ form }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <label class="margin-top-15" for="categories">Categories (amend, delete or add categories using the blank field)</label>
+                <div class="content-columns">
+                    <div class="column-1-3 button-container">
+                        <div class="tile-item-info">If you need more fields, click below</div>
+                        <div class="button-link" id="add_to_category_set">Add more</div>
+                    </div>
+                    <div class="column-2-3" id="category_set-container"><!-- TODO : add lookup value? -->
+                        {{ category_formset.management_form }}
+                        {% for form in category_formset %}
+                            <div class="formsets">
+                                    {{ form }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <label class="margin-top-15" for="countries">Countries (amend, delete or add countries using the blank field)</label>
+                <div class="content-columns">
+                    <div class="column-1-3 button-container">
+                        <div class="tile-item-info">If you need more fields, click below</div>
+                        <div class="button-link" id="add_to_country_set">Add more</div>
+                    </div>
+                    <div class="column-2-3" id="country_set-container"><!-- TODO : add lookup value? -->
+                        {{ country_formset.management_form }}
+                        {% for form in country_formset %}
+                            <div class="formsets">
+                                    {{ form }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="column-1-3 content-container">
+                <img class="thumbnail" src="{{ MEDIA_URL }}{% if document.default_image %}{{document.default_image}}{% else %}images/DALLE-2024-logo-design.png{% endif %}" alt="thumbnail" id="thumbnail"> 
+                <div class="doc-info margin-top-15">Change default illustration</div>
+                <div class="margin-top-15 content-container">
+                    <select id="default_image" name="default_image">
+                        {% if docimages %}
+                            {% for image in docimages %}
+                                <option value="{{ image }}" {% if image == document.default_image.image_url %}selected{% endif %}>{{ image }}</option>
+                            {% endfor %}
+                            <option value="" {% if not document.default_image %}selected{% endif %}>default placeholder image</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="delete-thumbnail header-button bordered" id="delete-thumbnail">Delete thumbnail</div>
+                <div class="inline margin-auto">
+                    <label for="new_images" class="margin-top-15"> Add new </label> 
+                    <input class="margin-top-15" type="file" name="new_images" id="new_images" multiple>
+                </div>
+                <input type="hidden" name="images_to_delete" id="images_to_delete" value="">
+            </div>
+        </div>
+        <label class="margin-top-15" for="overview">Overview</label>
+        <textarea class="form-input" id="overview" name="overview">{{ document.overview }}</textarea> 
+        <div class="inline margin-top-15">
+            <label for="summary_type">Summary type</label>
+            <select id="summary_type" name="summary_type">
+                <option value="Description" {% if document.summary_type == "Description" %}selected{% endif %}>Description</option>
+                <option value="Arxiv abstract" {% if document.summary_type == "Arxiv abstract" %}selected{% endif %}>Arxiv abstract</option>
+                <option value="Youtube video" {% if document.summary_type == "Youtube video" %}selected{% endif %}>Youtube video</option>
+            </select>
+        </div>				
+        <label class="margin-top-15" for="summary">Summary</label>
+        <textarea class="form-input" id="summary" name="summary">{{ document.summary}}</textarea>
+        <div class="inline margin-top-15 margin-bottom-15">
+            <label for="source_url">URL</label>
+            <input type="text" id="source_url" name="source_url" value="{% if document.source_url %}{{ document.source_url }}{% endif %}">
+        </div>
+        <hr /> 
+        <label class="margin-top-15" for="comment">Notes</label>
+        <textarea class="form-input margin-bottom-15 margin-bottom-15" name="comment" id="comment">{{ document.comment }}</textarea>
+        <hr /> 
+        <div class="content-columns">
+            <div class="column-1-2">
+                <label class="margin-top-15" for="llm">Model info</label>
+                <input type="text" class="form-input" id="llm" name="llm" value="{% if document.llm  %}{{ document.llm  }}{% endif %}">
+                <label class="margin-top-15" for="slug">Slug (defines path to document)<sup>*</sup></label>
+                <input type="text" class="form-input" id="slug" name="slug" value="{% if document.slug  %}{{ document.slug  }}{% endif %}" required>
+            </div>
+            <div class="column-1-2 button-container">
+                <div class="edit-buttons">
+                    <input class="save-button" type="submit" value="Save">
+                    {% if origin_slug %}
+                    <div class="inline right-aligned">
+                        <div class="button-link header-button bordered" id="delete-button">Delete</div>
+                        
+                            <a class="button-link header-button bordered" id="refresh-button" href="{% url 'newdocs:resubmit_document' document.slug %}">LLM'it again</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="footnote margin-top-30">* required</div>
+        <input type="hidden" name="is_draft" value="False">
+    </form>
+    {% else %}
+        <h1>Document not found</h1>
+    {% endif %}
+</div>
+
+{% if origin_slug %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // delete document (only if it not a blank template)
+        document.getElementById('delete-button').addEventListener('click', function() {
+
+            if (confirm('Are you sure you want to delete this document?')) {
+                fetch("{% url 'articles:delete_document' document.slug %}", {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(res_json => window.location.href = "/")
+            }
+            });
+    });
+</script>
+{% endif %}
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // function that adds a new field to a formset by cloning the last one
+        function add_field(fieldCategory) {
+            let totalForms = document.getElementById(`id_${fieldCategory}-TOTAL_FORMS`);
+            let total=parseInt(totalForms.value)
+            let formRegex = RegExp(`${fieldCategory}-(\\d){1}-`, 'g');
+
+            let newField = document.getElementById(`${fieldCategory}-container`).getElementsByClassName('formsets')[total - 1].cloneNode(true);
+
+            totalForms.value = total + 1;
+            newField.innerHTML = newField.innerHTML.replace(formRegex, `${fieldCategory}-${total}-`);
+            document.getElementById(`${fieldCategory}-container`).appendChild(newField);
+        }
+
+        document.getElementById('add_to_author_set').addEventListener('click', function() {
+            add_field('author_set');
+        });
+
+        document.getElementById('add_to_category_set').addEventListener('click', function() {
+            add_field('category_set');
+        });
+
+        document.getElementById('add_to_country_set').addEventListener('click', function() {
+            add_field('country_set');
+        });
+
+        // changing the image displayed when changing the select element
+        document.getElementById('default_image').addEventListener('change', function() {
+            let thumbnail = document.getElementById('thumbnail');
+
+            if (this.value.startsWith("new_image_")) {
+                // Handle new uploaded image
+                let fileIndex = parseInt(this.value.split("_")[2]);
+                let file = document.getElementById('new_images').files[fileIndex];
+
+                if (file && file.type.startsWith('image/')) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        thumbnail.setAttribute('src', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } 
+            else {
+                // Handle existing images
+            let targetURL = `{{ MEDIA_URL }}${this.value?this.value:"images/DALLE-2024-logo-design.png"}`;
+            thumbnail.setAttribute('src', targetURL);
+            }
+
+        });
+
+        // delete images that were automatically scraped but are irrelevant
+        document.getElementById('delete-thumbnail').addEventListener('click', function() {
+            console.log('delete thumbnail');
+            var selectElement = document.getElementById('default_image');
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+
+            if (selectedOption && confirm('Are you sure you want to delete this thumbnail?')) {
+                var imagesToDeleteField = document.getElementById('images_to_delete');
+                var currentValue = imagesToDeleteField.value;
+
+                // Append the selected image identifier to the hidden field value
+                imagesToDeleteField.value = currentValue ? currentValue + ',' + selectedOption.value : selectedOption.value;
+
+                // Remove the option from the select
+                selectElement.removeChild(selectedOption);
+                // Trigger the change event to update the thumbnail
+                selectElement.dispatchEvent(new Event('change'))
+            }
+        });
+        
+        //add new images
+        document.getElementById('new_images').addEventListener('change', function(event) {
+            var selectElement = document.getElementById('default_image');
+
+            // removes previously-added but not-saved images
+            for (let i = selectElement.options.length-1; i>=0; i--) {
+                if (selectElement.options[i].value.startsWith('new_image_')) {
+                    selectElement.removeChild(selectElement.options[i]);
+                }
+            }
+
+            for (let i = 0; i < event.target.files.length; i++) {
+
+                var file = event.target.files[i];
+
+                if (file.type.startsWith('image/')) {
+                    
+                    var fileName = file.name; 
+                    var newOption = document.createElement('option');
+
+                    newOption.text = fileName;
+                    newOption.value = `new_image_${i}`;;
+
+                    selectElement.appendChild(newOption);
+
+                    if (i === 0){
+                        // Select the first new option
+                        selectElement.value = newOption.value; 
+                        // Trigger the change event to update the thumbnail
+                        selectElement.dispatchEvent(new Event('change'))
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

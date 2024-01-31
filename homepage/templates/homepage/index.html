@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Semi-Agentic Knowledge Base : model agnostic AI assistant doing the heavy-lifting for you">
+    <meta name="keywords" content='machine learning, ai, artificial intelligence, knowledge base'>
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Semi-Agentic Knowledge Base">
+    <meta name="twitter:description" content="model agnostic AI assistant doing the heavy-lifting for you">
+    <meta name="twitter:image" content="{% static 'images/DALLE-2024-logo-design.png' %}">
+    <meta property="og:image" content="{% static 'images/DALLE-2024-logo-design.png' %}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Semi-Agentic Knowledge Base">
+    <meta name="apple-mobile-web-app-banner" content="yes">
+    <link rel="icon" type="image/png" href="{% static 'images/DALLE-2024-logo-design.png' %}">
+    <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png">
+    <title>Semi-Agentic Knowledge Base</title>
+    <link href="{% static 'css/main.css' %}?v=1" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+        <div>
+          <a class="home-link" href="/">
+              <svg class="home-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="white" height="40">
+                <path xmlns="http://www.w3.org/2000/svg" d="M153.304-189.058v-376.493q0-17.985 7.921-34.025 7.92-16.04 22.253-26.562L434.42-814.464q19.925-15.246 45.473-15.246 25.549 0 45.687 15.246l250.942 188.326q14.333 10.522 22.333 26.562 8 16.04 8 34.025v376.493q0 31.486-22.214 53.62-22.213 22.134-53.699 22.134H599.471q-16 0-26.938-10.939-10.939-10.938-10.939-26.938v-212.537q0-15.999-10.938-26.938-10.939-10.938-26.938-10.938h-87.436q-15.999 0-26.938 10.938-10.938 10.939-10.938 26.938v212.537q0 16-10.939 26.938-10.938 10.939-26.938 10.939H229.058q-31.486 0-53.62-22.134-22.134-22.134-22.134-53.62Z"/>
+              </svg>
+            <div class="app-name">Semi-Agentic Knowledge Base</div>
+          </a>
+        </div>
+        <a class="button-link header-button" href="{% url 'newdocs:new_docs' %}">Add docs +</a>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+      <a class="home-link" href="https://www.pitti.io/projects/semi-agentic-knowledge-base" target="_blank" rel="noreferrer noopener nofollow">
+        <svg class='pitti-logo' viewBox="0 0 64 30" height="20" width="30" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.73315363881402 0.001 L17.2641509433962 9.29919137466307 L24.5013477088949 26.4420485175202 L16.900269541779 29.5148247978437 L0.001 24.6630727762803 Z" fill="white"/>
+                  <path d="M20.5390835579515 8.61185983827493 L45.0808625336927 0.363881401617251 L43.2614555256065 12.6549865229111 L34.0835579514825 29.1509433962264 L27.2911051212938 24.8652291105121 Z" fill="white"/>
+                   <path d="M43.9083557951482 18.3962264150943 L58.2210242587601 6.06469002695418 L63.0727762803235 12.4528301886792 L63.7196765498652 29.99999 L37.9649595687332 29.2722371967655 Z" fill="white"/>
+              </svg>
+        <div>About</div>
+        </a>
+        <a class="home-link" href="https://github.com/pappitti/semi-agentic-knowledge-base" target="_blank" rel="noreferrer noopener nofollow">
+          <svg class="github-logo" xmlns="http://www.w3.org/2000/svg" fill="white" height="20" width="20" viewBox="0 0 96 96">
+            <path xmlns="http://www.w3.org/2000/svg" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" />
+          </svg>
+          <div>GitHub repo</div>
+        </a>
+    </footer>
+  </body>
+</html>
