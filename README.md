@@ -12,7 +12,7 @@ Important warning : this is a demo app meant to experiment with information extr
 1. `git clone https://github.com/pappitti/semi-agentic-knowledge-base.git`
 2. `cd semi-agentic-knowledge-base`
 3. `python3 -m venv myenv`
-4. `source venv/bin/activate` 
+4. `source myenv/bin/activate` 
 Note : if you follow these steps, the python interpreter for this project should be in ./semi-agentic-knowledge-base/myenv/bin/python
 5. `pip install django python-decouple Pillow beautifulsoup4 requests openai pymupdf`
 6. `cp .env.example .env`
@@ -29,9 +29,10 @@ This app does not require an OpenAi API key to work, it can perfectly run entire
 `python manage.py runserver`  
 The app is typically accessible http://127.0.0.1:8000, check your terminal for more information. After that stage, the rest should be straight-forward.   
 
-3. Optional but recommended: set-up a superuser account to access the admin console (typically available at http://127.0.0.1:8000/admin). 
+3. Optional but recommended: set-up a superuser account to access the admin console 
 `python manage.py createsuperuser`  
-You will be able to see the LLM tasks log and change tables or fields that are not directly accessible through the app UI.  
+Then follow the instructions in your terminal  
+You will be able to see, typically at http://127.0.0.1:8000/admin, the LLM tasks log and change tables or fields that are not directly accessible through the app UI.  
 
 ## Working with LLMs
 This app relies on LLMs' ability to return outputs in a JSON format. It does not leverage function calling. If the output format is incorrect, an entry may be added to the database so you can make manual adjustments but the fields may not be pre-populated. All processing tasks and LLM outputs for each url are logged and visible through the admin console.
@@ -61,7 +62,7 @@ Other envisaged features include:
   
 
 ## Credits and acknowledgements
-A number of projects have inspired this one in some way, but [this one](https://github.com/Nearcyan/papers.day) has been particularly instrumental.     
+A number of projects have inspired this one in some ways, but [that one](https://github.com/Nearcyan/papers.day) has been particularly instrumental.     
 Also, even if it's not really the spirit of this section, it would only be fair to thank OpenAi given how much work GPT4 has done on this project... 
 
 

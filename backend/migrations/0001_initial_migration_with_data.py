@@ -8,8 +8,8 @@ def create_default_data(apps, schema_editor):
     ChatFormat = apps.get_model('backend', 'ChatFormat')
     OpenaiModel = apps.get_model('backend', 'OpenaiModel')
     ChatFormat.objects.create(chat_name='chatml', chat_description='<|im_start|> system \n {system_prompt} <|im_end|> \n <|im_start|> {user_prompt} <|im_end|> \n<|im_start|> assistant', default=True)
-    ChatFormat.objects.create(chat_name='default', chat_description='<s>[INST] <<SYS>>\n {system_prompt} \n<</SYS>> \n\n {user_prompt}[/INST]', default=False)
-    ChatFormat.objects.create(chat_name='default', chat_description='<s>[INST]{system_prompt}\n{user_prompt} [/INST]', default=False)
+    ChatFormat.objects.create(chat_name='llama-chat', chat_description='<s>[INST] <<SYS>>\n {system_prompt} \n<</SYS>> \n\n {user_prompt}[/INST]', default=False)
+    ChatFormat.objects.create(chat_name='mistral-instruct', chat_description='<s>[INST]{system_prompt}\n{user_prompt} [/INST]', default=False)
     OpenaiModel.objects.create(model_name='gpt-3.5-turbo-1106', context_length='16k', accepts_json=True, default=True)
     OpenaiModel.objects.create(model_name='gpt-4-1106-preview', context_length='128k', accepts_json=True, default=False)
 
