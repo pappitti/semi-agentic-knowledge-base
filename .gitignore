@@ -29,7 +29,6 @@ myenv/
 *.swp
 *.swo
 **/migrations/*.py
-!**/migrations/0001_initial_with_data.py
 requirements.txt
 
 # IDE and editor-specific files

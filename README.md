@@ -16,7 +16,9 @@ Important warning : this is a demo app meant to experiment with information extr
 Note : if you follow these steps, the Python interpreter for this project should be in ./semi-agentic-knowledge-base/myenv/bin/python
 5. `pip install django python-decouple Pillow beautifulsoup4 requests openai pymupdf`
 6. `cp .env.example .env`
-7. `python manage.py migrate`
+7. `python manage.py makemigrations backend`
+8. following step 7. a new file name '0001_initial.py' will be created in backend/migration. Copy the content of [initial_migration_template_with_data.py](initial_migration_template_with_data.py) in that new file and save  
+9. `python manage.py migrate`
 
 The last phase will create a new local database and seed some tables with information that is necessary for the app to work (e.g OpenAI models names or chat formats for local models)
 
