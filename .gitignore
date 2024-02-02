@@ -30,6 +30,7 @@ myenv/
 *.swo
 **/migrations/*.py
 !backend/migrations/0001_initial.py
+!backend/migrations/__init__.py
 requirements.txt
 
 # IDE and editor-specific files
